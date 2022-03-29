@@ -13,6 +13,12 @@ let eraserWidth = eraserWidthElem.value;
 
 let download = document.querySelector(".download");
 
+let undoRedoTracker = [];
+let track = 0;
+
+let redo = document.querySelector(".redo");
+let undo = document.querySelector(".undo");
+
 let mouseDown = false;
 
 //api
@@ -46,6 +52,10 @@ canvas.addEventListener("mousemove",(e)=>{
 
 canvas.addEventListener("mouseup",(e)=>{
     mouseDown = false;
+
+    let url = canvas.toDataURL();
+    undoRedoTracker.push(url);
+    track = undoRedoTracker.length - 1;
 })
 
 pencilColor.forEach((colorElem)=>{
@@ -86,3 +96,38 @@ download.addEventListener("click",(e) => {
     a.download = "board.jpg";
     a.click(); 
 })
+
+undo.addEventListener("click",(e)=>{
+    if(track > 0) track--;
+    //action
+    let trackObj = {
+        trackValue:track,
+        undoRedoTracker
+    };
+
+    undoRedoCanvas(trackObj)
+})
+
+redo.addEventListener("click",(e)=>{
+    if(track < undoRedoTracker.length - 1)track++;
+    
+    let trackObj = {
+        trackValue:track,
+        undoRedoTracker
+    };
+
+    undoRedoCanvas(trackObj)
+})
+
+function undoRedoCanvas(trackObj){
+    track = trackObj.trackValue;
+    undoRedoTracker = trackObj.undoRedoTracker;
+
+    let url = undoRedoTracker[track];
+    let img = new Image();
+    img.src = url;
+    img.onload = (e)=>{
+        tool.drawImage(img,0,0,canvas.width, canvas.height);
+    }
+
+}
